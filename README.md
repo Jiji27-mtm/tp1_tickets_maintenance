@@ -1,69 +1,76 @@
-# TP1 - Gestion des tickets de maintenance
+# TP2 - Gestion des tickets de maintenance
 
-## Informations
-- **Nom :** Arij Mtimet
-- **Classe :** L2 DSI
-- **Établissement :** ISET Djerba
-- **Module :** Framework côté client
+## 1. Présentation
+Ce projet est une application web réalisée avec Vue.js 3 pour gérer des tickets de maintenance informatique.
 
-## Présentation
-Ce projet consiste à créer une application Vue.js permettant de consulter et rechercher des tickets de maintenance informatique.
-
-## Technologies utilisées
+## 2. Technologies utilisées
 - Vue.js 3
-- Vite
+- JavaScript
 - Axios
+- Vue Router
 - JSON Server
-- JavaScript et CSS
+- HTML et CSS
 
-## Installation
+## 3. Installation
+
+Installer les dépendances :
 
 ```bash
 npm install
-npm install axios
 ```
 
-## Lancement du projet
+## 4. Lancement du projet
 
-Terminal 1 :
+Lancer le serveur JSON :
+
 ```bash
 npx json-server db.json --port 3000
 ```
 
-Terminal 2 :
+Lancer Vue.js dans un deuxième terminal :
+
 ```bash
 npm run dev
 ```
 
-## Fonctionnalités
-- Afficher les tickets.
+## 5. Fonctionnalités réalisées
+- Afficher la liste des tickets.
 - Rechercher un ticket par titre.
-- Filtrer par statut et priorité.
-- Afficher le nombre de tickets.
-- Gérer le chargement et les erreurs.
+- Filtrer les tickets par statut et priorité.
+- Ajouter un nouveau ticket.
+- Modifier un ticket.
+- Supprimer un ticket avec confirmation.
+- Consulter les détails d'un ticket.
+- Modifier le statut d'un ticket.
+- Valider les champs obligatoires.
+- Afficher les messages d'erreur.
 
-## Questions
+## 6. Questions
 
-**1. Différence entre API REST et db.json :**
+**1. Quelle est la différence entre POST, PUT et PATCH ?**
 
-`db.json` contient les données, tandis que l'API REST permet d'accéder à ces données.
+- POST : permet d'ajouter un nouveau ticket.
+- PUT : permet de remplacer les informations d'un ticket.
+- PATCH : permet de modifier seulement certaines informations.
 
-**2. Pourquoi utiliser onMounted() ?**
+**2. Pourquoi demander une confirmation avant DELETE ?**
 
-Pour charger les tickets automatiquement lorsque le composant s'affiche.
+Pour éviter de supprimer un ticket par erreur.
 
-**3. Quel est le rôle d'Axios ?**
+**3. Quel est le rôle de Vue Router ?**
 
-Axios permet de communiquer avec l'API et de récupérer les tickets.
+Vue Router permet de naviguer entre les différentes pages de l'application sans recharger toute la page.
 
-**4. Différence entre ref() et computed() :**
+**4. Comment éviter les doublons lors de l'enregistrement ?**
 
-`ref()` permet de créer une donnée réactive. `computed()` permet de calculer une valeur à partir d'autres données réactives.
+On désactive le bouton d'enregistrement pendant l'envoi du formulaire pour empêcher plusieurs clics.
 
-## Captures d'écran
+## 7. Difficultés rencontrées
 
-Les captures demandées sont enregistrées dans le dossier `captures/`.
+J'ai rencontré quelques difficultés lors de la configuration du projet, de la navigation entre les pages et de la communication avec JSON Server. J'ai réussi à les résoudre progressivement.
 
-## Conclusion
+## 8. Auteur
 
-Ce TP m'a permis de découvrir les API REST et d'apprendre à utiliser Vue.js et Axios pour afficher et filtrer des données.
+Nom : Arij Mtimet  
+Formation : L2 DSI 1 
+Établissement : ISET Djerba

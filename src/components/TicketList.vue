@@ -1,243 +1,215 @@
+
 <script setup>
-import { ref, onMounted, computed } from "vue";
-import { getTickets } from "../services/ticketService";
+import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { getTickets, deleteTicket } from '../services/ticketService'
 
-const tickets = ref([]);
-const chargement = ref(true);
-const erreur = ref("");
+const router = useRouter()
 
-const recherche = ref("");
-const filtreStatut = ref("");
-const filtrePriorite = ref("");
+const tickets = ref([])
+const chargement = ref(true)
+const erreur = ref('')
+const recherche = ref('')
+const filtreStatut = ref('')
+const filtrePriorite = ref('')
 
 async function chargerTickets() {
-  try {
-    chargement.value = true;
-    erreur.value = "";
-    const response = await getTickets();
-    tickets.value = response.data;
-  } catch (error) {
-    erreur.value =
-      "Impossible de charger les tickets. Vérifiez que JSON Server est démarré.";
-  } finally {
-    chargement.value = false;
-  }
+    try {
+        chargement.value = true
+        erreur.value = ''
+        const response = await getTickets()
+        tickets.value = response.data
+    } catch (error) {
+        erreur.value = 'Impossible de charger les tickets.'
+    } finally {
+        chargement.value = false
+    }
 }
 
 onMounted(() => {
-  chargerTickets();
-});
+    chargerTickets()
+})
 
 const ticketsFiltres = computed(() => {
-  return tickets.value.filter((ticket) => {
-    const titreCorrespond = ticket.titre
-      .toLowerCase()
-      .includes(recherche.value.toLowerCase());
+    return tickets.value.filter(ticket => {
+        const titre = ticket.titre.toLowerCase().includes(recherche.value.toLowerCase())
+        const statut = filtreStatut.value === '' || ticket.statut === filtreStatut.value
+        const priorite = filtrePriorite.value === '' || ticket.priorite === filtrePriorite.value
 
-    const statutCorrespond =
-      filtreStatut.value === "" || ticket.statut === filtreStatut.value;
+        return titre && statut && priorite
+    })
+})
 
-    const prioriteCorrespond =
-      filtrePriorite.value === "" || ticket.priorite === filtrePriorite.value;
+async function supprimerTicket(id) {
+    const confirmation = confirm('Voulez-vous vraiment supprimer ce ticket ?')
 
-    return titreCorrespond && statutCorrespond && prioriteCorrespond;
-  });
-});
+    if (confirmation) {
+        try {
+            await deleteTicket(id)
+            await chargerTickets()
+        } catch (error) {
+            erreur.value = 'Erreur lors de la suppression du ticket.'
+        }
+    }
+}
+
+function voirTicket(id) {
+    router.push('/tickets/' + id)
+}
 </script>
 
 <template>
-  <div class="container">
-    <h1>Gestion des tickets de maintenance</h1>
+    <div class="container">
+        <h1>Gestion des tickets de maintenance</h1>
 
-    <p class="description">
-      Consultez et recherchez les tickets de support informatique.
-    </p>
+        <button class="nouveau" @click="router.push('/tickets/nouveau')">
+            Nouveau ticket
+        </button>
 
-    <div v-if="chargement" class="message">Chargement...</div>
-
-    <div v-else-if="erreur" class="error">
-      {{ erreur }}
-    </div>
-
-    <div v-else>
-      <div class="filtres">
-        <input
-          type="text"
-          v-model="recherche"
-          placeholder="Rechercher par titre..."
-        />
-
-        <select v-model="filtreStatut">
-          <option value="">Tous les statuts</option>
-          <option value="Ouvert">Ouvert</option>
-          <option value="En cours">En cours</option>
-          <option value="Résolu">Résolu</option>
-        </select>
-
-        <select v-model="filtrePriorite">
-          <option value="">Toutes les priorités</option>
-          <option value="Haute">Haute</option>
-          <option value="Moyenne">Moyenne</option>
-          <option value="Basse">Basse</option>
-        </select>
-      </div>
-
-      <p class="nombre">
-        Nombre de tickets visibles : {{ ticketsFiltres.length }}
-      </p>
-
-      <p v-if="ticketsFiltres.length === 0" class="message">
-        Aucun ticket trouvé.
-      </p>
-
-      <div v-else class="liste">
-        <div v-for="ticket in ticketsFiltres" :key="ticket.id" class="ticket">
-          <h2>{{ ticket.titre }}</h2>
-
-          <p><strong>Demandeur :</strong> {{ ticket.demandeur }}</p>
-          <p><strong>Description :</strong> {{ ticket.description }}</p>
-          <p><strong>Date :</strong> {{ ticket.dateCreation }}</p>
-
-          <div class="badges">
-            <span
-              :class="['badge', 'priorite-' + ticket.priorite.toLowerCase()]"
-            >
-              {{ ticket.priorite }}
-            </span>
-
-            <span
-              :class="[
-                'badge',
-                'statut-' + ticket.statut.toLowerCase().replace(' ', '-'),
-              ]"
-            >
-              {{ ticket.statut }}
-            </span>
-          </div>
+        <div v-if="chargement" class="message">
+            Chargement...
         </div>
-      </div>
+
+        <div v-else-if="erreur" class="erreur">
+            {{ erreur }}
+        </div>
+
+        <div v-else>
+            <div class="filtres">
+                <input v-model="recherche" placeholder="Rechercher par titre...">
+
+                <select v-model="filtreStatut">
+                    <option value="">Tous les statuts</option>
+                    <option>Ouvert</option>
+                    <option>En cours</option>
+                    <option>Résolu</option>
+                    <option>Fermé</option>
+                </select>
+
+                <select v-model="filtrePriorite">
+                    <option value="">Toutes les priorités</option>
+                    <option>Haute</option>
+                    <option>Moyenne</option>
+                    <option>Basse</option>
+                </select>
+            </div>
+
+            <p class="nombre">
+                Nombre de tickets visibles : {{ ticketsFiltres.length }}
+            </p>
+
+            <p v-if="ticketsFiltres.length === 0" class="message">
+                Aucun ticket trouvé.
+            </p>
+
+            <div v-else class="liste">
+                <div v-for="ticket in ticketsFiltres" :key="ticket.id" class="ticket">
+                    <h2>{{ ticket.titre }}</h2>
+
+                    <p><strong>Demandeur :</strong> {{ ticket.demandeur }}</p>
+                    <p><strong>Description :</strong> {{ ticket.description }}</p>
+                    <p><strong>Date :</strong> {{ ticket.dateCreation }}</p>
+                    <p><strong>Priorité :</strong> {{ ticket.priorite }}</p>
+                    <p><strong>Statut :</strong> {{ ticket.statut }}</p>
+
+                    <button @click="voirTicket(ticket.id)">
+                        Détails / Modifier
+                    </button>
+
+                    <button class="supprimer" @click="supprimerTicket(ticket.id)">
+                        Supprimer
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 </template>
 
 <style scoped>
-
 .container {
-  max-width: 1100px;
-  margin: 30px auto;
-  padding: 20px;
-  font-family: Arial, sans-serif;
+    max-width: 1100px;
+    margin: 30px auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
 }
 
 h1 {
-  text-align: center;
-  color: purple;
-}
-
-.description {
-  text-align: center;
-  color:#D48AA8;
+    text-align: center;
+    color: #243b55;
 }
 
 .filtres {
-  display: flex;
-  gap: 12px;
-  margin: 30px 0 15px;
-  flex-wrap: wrap;
+    display: flex;
+    gap: 12px;
+    margin: 30px 0 15px;
+    flex-wrap: wrap;
 }
 
-input,
-select {
-  padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  flex: 1;
-  min-width: 180px;
+input, select {
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    flex: 1;
+    min-width: 180px;
 }
 
 .nombre {
-  font-weight: bold;
-  margin-bottom: 20px;
+    font-weight: bold;
+    margin-bottom: 20px;
 }
 
 .liste {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
 }
 
 .ticket {
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  border: 1px solid #ddd;
-  box-shadow: 0 3px 8px #00000012;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+    box-shadow: 0 3px 8px #00000012;
 }
 
 .ticket h2 {
-  color: #243b55;
-  font-size: 20px;
+    color: #243b55;
+    font-size: 20px;
 }
 
-.badges {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-top: 15px;
+button {
+    padding: 10px 12px;
+    margin: 5px 5px 0 0;
+    border: none;
+    border-radius: 6px;
+    background: #243b55;
+    color: white;
+    cursor: pointer;
 }
 
-.badge {
-  padding: 7px 12px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: bold;
+.nouveau {
+    display: block;
+    margin: 20px auto;
 }
 
-.priorite-haute {
-  background: #fee2e2;
-  color: #b91c1c;
-}
-
-.priorite-moyenne {
-  background: #fef354;
-  color: #92400e;
-}
-
-.priorite-basse {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.statut-ouvert {
-  background: #1245;
-  color: #1e40a1;
-}
-
-.statut-en-cours {
-  background: pink;
-  color:blue;
-}
-
-.statut-résolu {
-  background: #2147;
-  color: #166574;
+.supprimer {
+    background: #b91c1c;
 }
 
 .message {
-  text-align: center;
-  padding: 25px;
+    text-align: center;
+    padding: 25px;
 }
 
-.error {
-  color: red;
-  background: #fee2e2;
-  padding: 15px;
-  border-radius: 8px;
+.erreur {
+    color: #b91c1c;
+    text-align: center;
+    padding: 15px;
 }
 
 @media (max-width: 600px) {
-  .filtres {
-    flex-direction: column;
-  }
+    .filtres {
+        flex-direction: column;
+    }
 }
 </style>
